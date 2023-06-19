@@ -5,12 +5,12 @@ from cell import Cell,Maze
 def main():
     win = Window(800,600)
     
-    num_rows=10
-    num_cols=15
-    x_size=25
-    y_size=25
+    num_rows=20
+    num_cols=14
+    x_size=30
+    y_size=30
 
-    m1=Maze(15,15,num_rows,num_cols,x_size,y_size,win)
+    m1=Maze(15,15,num_rows,num_cols,x_size,y_size,win,seed=1)
 
     win.wait_for_close()
 

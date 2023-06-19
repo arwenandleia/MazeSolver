@@ -1,5 +1,6 @@
 from graphics import Window,Line,Point
 import time
+import random
 
 class Maze():
     def __init__(
@@ -11,6 +12,7 @@ class Maze():
             cell_size_x,
             cell_size_y,
             win=None,
+            seed=None,
         ):
         self._x1=x1
         self._y1=y1
@@ -22,8 +24,104 @@ class Maze():
             self._win=win
         else:
             self._win = None
+        
+        if not seed:
+            random.seed(seed)
+        
         self._create_cells()
         self._break_entrance_and_exit()
+        self._break_walls_r(0,0)
+        self._reset_cells_visited()
+
+    def solve(self):
+        return self._solve_r(self,0,0)
+
+    def _solve_r(self,i,j):
+        self._animate()
+        current_cell = self._cells[i][j]
+        current_cell.is_visited=True
+        if i==self._num_cols and j==self._num_rows:
+            return True
+        to_visit_list=[]
+
+
+
+
+
+    def _reset_cells_visited(self):
+        for i in range(self._num_cols):
+            for j in range(self._num_rows):
+                self._cells[i][j].is_visited=False
+
+    def _break_walls_r(self,i,j): # i will represent the column and j the row in that column
+        current_cell = self._cells[i][j]
+        current_cell.is_visited=True
+        
+        while True:
+            self._to_visit_list=[]
+            self.immediate_cells_to_visit(i,j,self._to_visit_list)
+            if len(self._to_visit_list)==0:
+                self._draw_cell(i,j)
+                return
+            rnd_choice = random.choice(self._to_visit_list)
+            new_i=rnd_choice[0]
+            new_j=rnd_choice[1]
+            self._knock_down_wals(i,j,new_i,new_j)
+            self._break_walls_r(new_i,new_j)
+
+
+    def _knock_down_wals(self,i,j,new_i,new_j):
+        cell_one = self._cells[i][j]
+        cell_two = self._cells[new_i][new_j]
+
+        #cell two on the right
+        if new_i>i:
+            cell_one.has_right_wall=False
+            cell_two.has_left_wall=False
+            
+        #cell two on the left
+        if new_i<i:
+            cell_one.has_left_wall=False
+            cell_two.has_rigt_wall=False
+        #cell two on the top
+        if new_j<j:
+            cell_one.has_top_wall=False
+            cell_two.has_bottom_wall=False
+        #cell two on the bottom
+        if new_j>j:
+            cell_one.has_bottom_wall=False
+            cell_two.has_top_wall=False
+
+            
+    def immediate_cells_to_visit(self,i,j,to_vist):
+        #check top
+        cell_col=i
+        cell_row=j-1
+        if cell_col>=0 and cell_col<self._num_cols and cell_row>=0 and cell_row <self._num_rows:
+            if not self._cells[cell_col][cell_row].is_visited:
+                to_vist.append( (cell_col,cell_row))
+        
+        #check bottom
+        cell_col=i
+        cell_row=j+1
+        if cell_col>=0 and cell_col<self._num_cols and cell_row>=0 and cell_row <self._num_rows:
+            if not self._cells[cell_col][cell_row].is_visited:
+                to_vist.append( (cell_col,cell_row))
+        
+        #check right
+        cell_col=i+1
+        cell_row=j
+        if cell_col>=0 and cell_col<self._num_cols and cell_row>=0 and cell_row <self._num_rows:
+            if not self._cells[cell_col][cell_row].is_visited:
+                to_vist.append( (cell_col,cell_row))
+        
+        #check left
+        cell_col=i-1
+        cell_row=j
+        if cell_col>=0 and cell_col<self._num_cols and cell_row>=0 and cell_row <self._num_rows:
+            if not self._cells[cell_col][cell_row].is_visited:
+                to_vist.append( (cell_col,cell_row))
+        
 
     def _break_entrance_and_exit(self):
         self._cells[0][0].has_top_wall=False
@@ -62,7 +160,7 @@ class Maze():
 
     def _animate(self):
         self._win.redraw()
-        time.sleep(0.1)
+        time.sleep(0.05)
         
 
 
@@ -73,6 +171,7 @@ class Cell():
         self.has_right_wall=True
         self.has_top_wall=True
         self.has_bottom_wall=True
+        self.is_visited=False
         if win:
             self._win = win
         else:

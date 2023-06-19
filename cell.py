@@ -34,18 +34,42 @@ class Maze():
         self._reset_cells_visited()
 
     def solve(self):
-        return self._solve_r(self,0,0)
+        return self._solve_r(0,0)
 
     def _solve_r(self,i,j):
         self._animate()
         current_cell = self._cells[i][j]
         current_cell.is_visited=True
-        if i==self._num_cols and j==self._num_rows:
+        if i==self._num_cols-1 and j==self._num_rows-1:
             return True
         to_visit_list=[]
+        self.immediate_cells_to_visit(i,j,to_visit_list)
+        for neighbour in to_visit_list:
+            new_i=neighbour[0]
+            new_j=neighbour[1]
+            if self._is_there_no_wall(i,j,new_i,new_j):
+                new_cell=self._cells[new_i][new_j]
+                current_cell.draw_move(new_cell)
+                if self._solve_r(new_i,new_j):
+                    return True
+                else:
+                    current_cell.draw_move(new_cell,undo=True)
+
+        return False
 
 
-
+    def _is_there_no_wall(self,i,j,new_i,new_j):
+        
+        if new_i>i: # to right
+            return not self._cells[i][j].has_right_wall
+        elif new_i<i: # to left
+            return not self._cells[i][j].has_left_wall
+        elif new_j>j: # to bottom
+            return not self._cells[i][j].has_bottom_wall
+        elif new_j<j: #to top
+            return not self._cells[i][j].has_top_wall
+        else:
+            return False
 
 
     def _reset_cells_visited(self):
@@ -160,7 +184,7 @@ class Maze():
 
     def _animate(self):
         self._win.redraw()
-        time.sleep(0.05)
+        time.sleep(0.1)
         
 
 
